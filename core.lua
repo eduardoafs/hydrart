@@ -63,7 +63,7 @@ function HydraRT:AddLoadedModule()
 end
 
 -- testing
-function HydraRT:aura_test()
+function HydraRT:RaidGroups()
 	local raid_groups = { {}, {}, {}, {} }
 	
     local playerGUIDs = {
