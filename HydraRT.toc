@@ -1,0 +1,7 @@
+## Interface: 70200
+## Title: Hydra Raid Tools
+## Author: Cleonice-Azralon
+## Notes: Hydra-Azralon Raid Tools
+## Version: 1.0
+
+core.lua
