@@ -10,11 +10,10 @@ local pairs = pairs
 HydraRT = CreateFrame("FRAME", "HydraFrame");
 HydraRT:RegisterEvent("ZONE_CHANGED_NEW_AREA");
 HydraRT:RegisterEvent("GROUP_ROSTER_UPDATE");
-HydraRT:SetScript("OnEvent", HydraRT:EventHandler);
 
 HydraRT.debugActive = true;
 
-function HydraRT:EventHandler(self, event, ...) 
+function HydraEventHandler(self, event, ...) 
 	if event=="ZONE_CHANGED_NEW_AREA" then 
 		HydraRT:LoadZone()
 	elseif event=="GROUP_ROSTER_UPDATE" then
@@ -22,7 +21,7 @@ function HydraRT:EventHandler(self, event, ...)
 	end
 end
 
-local function HydraRT:LoadZone()
+function HydraRT:LoadZone()
 	-- Unload All Loaded Zones
 	-- TODO
 	
@@ -99,3 +98,4 @@ function HydraRT:RaidGroups()
 	return raid_groups, tank, heal, dps
 end
 
+HydraRT:SetScript("OnEvent", HydraEventHandler);
