@@ -1,11 +1,7 @@
-------------------------------
--- Core of HydraRT
--- @Author Cleonice 
--- 
--- [Functions]
--- LoadZone - Callback for ZONE_CHANGED_NEW_AREA, automatically loads addon for each zone
--- DisplayDebugMessage - Debug messages
--- DisplayUserMessage - User messages
+----------------------
+-- Core of HydraRT  --
+-- @Author Cleonice --
+-- -------------------
 
 
 local _G = _G
@@ -13,10 +9,20 @@ local pairs = pairs
 
 HydraRT = CreateFrame("FRAME", "HydraFrame");
 HydraRT:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+HydraRT:RegisterEvent("GROUP_ROSTER_UPDATE");
+HydraRT:SetScript("OnEvent", HydraRT:EventHandler);
 
 HydraRT.debugActive = true;
 
-function LoadZone(self, zoneChangedEvent, ...)
+function HydraRT:EventHandler(self, event, ...) 
+	if event=="ZONE_CHANGED_NEW_AREA" then 
+		HydraRT:LoadZone()
+	elseif event=="GROUP_ROSTER_UPDATE" then
+		HydraRT.groups, HydraRT.tank, HydraRT.heal, HydraRT.dps = HydraRT:RaidGroups()
+	end
+end
+
+local function HydraRT:LoadZone()
 	-- Unload All Loaded Zones
 	-- TODO
 	
@@ -45,7 +51,6 @@ function LoadZone(self, zoneChangedEvent, ...)
 	end
 end
 
-HydraRT:SetScript("OnEvent", LoadZone);
 
 function HydraRT:DisplayDebugMessage(kind, fun, arg1, arg2, arg3)
 	if not HydraRT.debugActive then return end -- If debuf is off, do nothing
@@ -62,28 +67,35 @@ function HydraRT:AddLoadedModule()
 	HydraRT:DisplayDebugMessage("info", "AddLoadedModule","called")
 end
 
--- testing
+
+--------------------------------------
+-- Support functions for weak auras --
+--------------------------------------
+
+-- Raid groups
+-- @returns groups - array with the groups
+-- @returns tank - tank list, ordened
+-- @returns heal - healer list, ordened
+-- @returns dps - dps list, ordened
 function HydraRT:RaidGroups()
 	local raid_groups = { {}, {}, {}, {} }
-	
-    local playerGUIDs = {
-        {},
-        {}
-    }
+	local tank = {}
+	local heal = {}
+	local dps = {}
 	for i=1,20 do
+		local unit = "raid"..i
 		local name, _, g = GetRaidRosterInfo(i)
-		if g == 3 or g == 4 then 
-			playerGUIDs[g-2][#playerGUIDs[g-2]+1] = name --UnitGUID(unit)
+		raid_groups[g][#raid_groups[g]+1] = name
+		local role = UnitGroupRolesAssigned(unit)
+		
+		if (role=="TANK") then 
+			tank[#tank+1] = name
+		elseif (role=="HEALER") then 
+			heal[#heal+1] = name
+		elseif (role=="DAMAGER") then 
+			dps[#dps+1] = name
 		end
-		raid_groups[g][#raid_groups[g]+1] = name -- UnitGUID(name)
 	end
-	-- additional last 2 of g2 
-	playerGUIDs[1][6] = raid_groups[2][4]
-	playerGUIDs[2][6] = raid_groups[2][5]
-
-	print(format("G1: %s %s %s %s %s %s", playerGUIDs[1][1], playerGUIDs[1][2],playerGUIDs[1][3],playerGUIDs[1][4],playerGUIDs[1][5],playerGUIDs[1][6]))
-	print(format("G2: %s %s %s %s %s %s", playerGUIDs[2][1], playerGUIDs[2][2],playerGUIDs[2][3],playerGUIDs[2][4],playerGUIDs[2][5],playerGUIDs[2][6]))
+	return raid_groups, tank, heal, dps
 end
-
-print("[HydraRT] Load Complete")
 
