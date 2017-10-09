@@ -82,7 +82,7 @@ function HydraRT:RaidGroups()
 	local tank = {}
 	local heal = {}
 	local dps = {}
-	for i=1,20 do
+	for i=1,GetNumGroupMembers() do
 		local unit = "raid"..i
 		local name, _, g = GetRaidRosterInfo(i)
 		raid_groups[g][#raid_groups[g]+1] = name
