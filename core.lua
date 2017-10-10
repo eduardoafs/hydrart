@@ -84,15 +84,17 @@ function HydraRT:RaidGroups()
 	for i=1,GetNumGroupMembers() do
 		local unit = "raid"..i
 		local name, _, g = GetRaidRosterInfo(i)
-		raid_groups[g][#raid_groups[g]+1] = name
-		local role = UnitGroupRolesAssigned(unit)
-		
-		if (role=="TANK") then 
-			tank[#tank+1] = name
-		elseif (role=="HEALER") then 
-			heal[#heal+1] = name
-		elseif (role=="DAMAGER") then 
-			dps[#dps+1] = name
+		if g<=4 then -- just put members in the 4 first groups
+			raid_groups[g][#raid_groups[g]+1] = name
+			local role = UnitGroupRolesAssigned(unit)
+			
+			if (role=="TANK") then 
+				tank[#tank+1] = name
+			elseif (role=="HEALER") then 
+				heal[#heal+1] = name
+			elseif (role=="DAMAGER") then 
+				dps[#dps+1] = name
+			end
 		end
 	end
 	return raid_groups, tank, heal, dps
