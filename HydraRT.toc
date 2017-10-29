@@ -3,5 +3,6 @@
 ## Author: Cleonice-Azralon
 ## Notes: Hydra-Azralon Raid Tools
 ## Version: 1.0
+## SavedVariables: HydraRT.options
 
 core.lua

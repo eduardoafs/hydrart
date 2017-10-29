@@ -13,6 +13,20 @@ HydraRT:RegisterEvent("GROUP_ROSTER_UPDATE");
 
 HydraRT.debugActive = true;
 
+HydraRT.options = HydraRT.options or {}
+
+function table.empty (self)
+    for _, _ in pairs(self) do
+        return false
+    end
+    return true
+end
+
+-- Init the options, for the first time run
+if table.empty(HydraRT.options) then 
+	HydraRT.options.combatLog = {}
+end
+
 function HydraEventHandler(self, event, ...) 
 	if event=="ZONE_CHANGED_NEW_AREA" then 
 		HydraRT:LoadZone()
@@ -28,12 +42,19 @@ function HydraRT:LoadZone()
 	-- Load new zone addon
 	
 
-	_name, _type = GetInstanceInfo()
+	_name, _type, difficultyIndex, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapId = GetInstanceInfo()
 	
     local currentZone = gsub(_name,"%s+", "") -- Removing empty spaces
 
 	if _type ~= "raid" then 
 		HydraRT:DisplayDebugMessage("info", "LoadZone", currentZone .. " is not a raid.")
+		-- Start combat log
+		if (HydraRT.options.combatLog[instanceMapID]) then
+			if HydraRT.options.combatLog[instanceMapID][difficultyIndex] then 
+				LoggingCombat(true)
+				HydraRT:DisplayDebugMessage("info","CombatLog","Enabled")
+			end
+		end
 		return
 	end
 	
@@ -50,6 +71,12 @@ function HydraRT:LoadZone()
 	end
 end
 
+function HydraRT:enableCombatLogCurrentZone()
+	_name, _type, difficultyIndex, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapId = GetInstanceInfo()
+	HydraRT.options.combatLog[instanceMapID][difficultyIndex] = true
+	HydraRT:DisplayDebugMessage("info","CombatLog","Enabled for this zone")
+	LoggingCombat(true)
+end
 
 function HydraRT:DisplayDebugMessage(kind, fun, arg1, arg2, arg3)
 	if not HydraRT.debugActive then return end -- If debuf is off, do nothing
@@ -77,24 +104,23 @@ end
 -- @returns heal - healer list, ordened
 -- @returns dps - dps list, ordened
 function HydraRT:RaidGroups()
-	local raid_groups = { {}, {}, {}, {} }
+	local raid_groups = { }
 	local tank = {}
 	local heal = {}
 	local dps = {}
 	for i=1,GetNumGroupMembers() do
 		local unit = "raid"..i
 		local name, _, g = GetRaidRosterInfo(i)
-		if g<=4 then -- just put members in the 4 first groups
-			raid_groups[g][#raid_groups[g]+1] = name
-			local role = UnitGroupRolesAssigned(unit)
-			
-			if (role=="TANK") then 
-				tank[#tank+1] = name
-			elseif (role=="HEALER") then 
-				heal[#heal+1] = name
-			elseif (role=="DAMAGER") then 
-				dps[#dps+1] = name
-			end
+		if raid_groups[g] == nil then raid_groups[g] = { } end
+		raid_groups[g][#raid_groups[g]+1] = name
+		local role = UnitGroupRolesAssigned(unit)
+		
+		if (role=="TANK") then 
+			tank[#tank+1] = name
+		elseif (role=="HEALER") then 
+			heal[#heal+1] = name
+		elseif (role=="DAMAGER") then 
+			dps[#dps+1] = name
 		end
 	end
 	return raid_groups, tank, heal, dps
