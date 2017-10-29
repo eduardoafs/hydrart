@@ -52,7 +52,9 @@ function HydraRT:LoadZone()
 		if (HydraRT.options.combatLog[instanceMapID]) then
 			if HydraRT.options.combatLog[instanceMapID][difficultyIndex] then 
 				LoggingCombat(true)
-				HydraRT:DisplayDebugMessage("info","CombatLog","Enabled")
+				HydraRT:DisplayDebugMessage("info","CombatLog","CombatLog enabled")
+			else
+				HydraRT:DisplayDebugMessage("info","CombatLog","CombatLog is not enabled for this zone, check options to enable it.")			
 			end
 		end
 		return
